@@ -1,0 +1,81 @@
+syntax = "proto3";
+option go_package = "../pb";
+
+package pb;
+service Query{
+  //通过城市名称获取天气预报
+  rpc GetByName(WeatherRequest) returns(WeatherResponse);
+
+  //通过城市id获取天气预报
+  rpc GetById(WeatherRequest) returns(WeatherResponse);
+
+  //客户端通过流的方式进行发送数据，而服务端采用一次性返回数据
+  rpc GetByStream(stream WeatherRequest) returns(StreamResp);
+
+  //客户端一次一个数据，如果一个种类，而服务端通过流的方式返回这个类别下的所有数据
+  rpc ReturnByStream(CityRequest) returns(stream CityResp);
+
+  //双向流，客户端通过流的方式不断的向服务端发送商品id
+  //服务端每接收到一个商品ID后，立即查询商品详情，查到后立即通过流的方式返回给客户端
+  rpc BidirectionalStream(stream Product) returns(stream Product);
+
+}
+
+//商品
+message Product {
+  int64 id = 1;//商品id
+  string name = 2;//商品名称
+}
+//通过流的方式返回天气
+message StreamResp{
+  repeated WeatherResponse results = 1;
+}
+//城市请求体
+message CityRequest{
+  string province = 1;
+}
+//城市返回体
+message CityResp{
+  string cityname = 1;
+}
+//天气预报result字段
+message Result{
+  string city = 1;
+  Realtime realtime = 2;
+  repeated Future future = 3;
+}
+//天气预报实时字段
+message Realtime{
+  string temperature = 1;
+  string humidity = 2;
+  string info = 3;
+  string wid = 4;
+  string direct = 5;
+  string power = 6;
+  string aqi = 7;
+}
+message Wid {
+  string day = 1;
+  string night = 2;
+}
+//天气预报未来预报
+message Future{
+  string date = 1;
+  string temperature = 2;
+  string weather = 3;
+  Wid wid = 4;
+  string direct = 5;
+}
+//天气预报返回实体
+message WeatherResponse {
+  string reason = 1;
+  Result result = 2;
+  int64 error_code = 3;
+}
+
+//天气预报请求实体
+message WeatherRequest{
+  string city = 1;
+  string key = 2;
+  string province = 3;
+}
